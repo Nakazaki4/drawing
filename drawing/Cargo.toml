@@ -4,7 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-
-[lib]
-name = "drawing"
-path = "src/lib.rs"
+rand = "0.10.0"
+raster = "0.2.0"
