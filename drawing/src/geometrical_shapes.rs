@@ -1,20 +1,64 @@
 use raster::{Color, Image};
+
+pub trait Drawable {
+    fn draw(&self, image: &mut Image);
+    fn color(&self) -> Color;
+}
+
+pub trait Displayable {
+    fn display(&mut self, x: i32, y: i32, color: Color);
+}
+
+#[derive(Clone, Copy)]
+pub struct Point {
+    pub x: i32,
+    pub y: i32,
+}
+
+impl Point {
+    pub fn new(x: i32, y: i32) -> Self {
+        Point { x, y }
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Point {
+            x: rand::random::<i32>().abs() % width,
+            y: rand::random::<i32>().abs() % height,
+        }
+    }
+}
+
+impl Drawable for Point {
+    fn draw(&self, image: &mut Image) {
+        image.display(self.x, self.y, self.color());
+    }
+
+    fn color(&self) -> Color {
+        Color::rgb(rand::random(), rand::random(), rand::random())
+    }
+}
+
 pub struct Line {
-    start: Point,
-    end: Point,
+    pub start: Point,
+    pub end: Point,
 }
 
 impl Line {
+    pub fn new(start: &Point, end: &Point) -> Self {
+        Line {
+            start: *start,
+            end: *end,
+        }
+    }
+
     pub fn random(width: i32, height: i32) -> Self {
         Line {
             start: Point::random(width, height),
             end: Point::random(width, height),
         }
     }
-}
 
-impl Drawable for Line {
-    fn draw(&self, image: &mut Image) {
+    fn draw_with_color(&self, image: &mut Image, color: Color) {
         let x0 = self.start.x;
         let y0 = self.start.y;
         let x1 = self.end.x;
@@ -28,10 +72,8 @@ impl Drawable for Line {
         let mut tx = x0;
         let mut ty = y0;
         let mut idp = 2 * dy - dx;
-        let color = self.color();
 
         if dx > dy {
-            // Slope < 1
             loop {
                 image.display(tx, ty, color.clone());
                 if tx == x1 {
@@ -46,7 +88,6 @@ impl Drawable for Line {
                 }
             }
         } else {
-            // Slope >= 1
             idp = 2 * dx - dy;
             loop {
                 image.display(tx, ty, color.clone());
@@ -63,51 +104,56 @@ impl Drawable for Line {
             }
         }
     }
+}
+
+impl Drawable for Line {
+    fn draw(&self, image: &mut Image) {
+        self.draw_with_color(image, self.color());
+    }
 
     fn color(&self) -> Color {
-        Color::rgb(
-            rand::random_range(0..=255),
-            rand::random_range(0..=255),
-            rand::random_range(0..=255),
-        )
+        Color::rgb(rand::random(), rand::random(), rand::random())
     }
 }
 
-pub struct Point {
-    x: i32,
-    y: i32,
+pub struct Pentagon {
+    center: Point,
+    radius: i32,
 }
 
-impl Point {
-    pub fn new(x: i32, y: i32) -> Self {
-        Point { x, y }
-    }
+impl Pentagon {
     pub fn random(width: i32, height: i32) -> Self {
-        Point {
-            x: rand::random_range(0..width),
-            y: rand::random_range(0..height),
+        Pentagon {
+            center: Point::random(width, height),
+            radius: rand::random::<i32>().abs() % 100 + 20,
         }
     }
+
+    fn points(&self) -> [Point; 5] {
+        let mut points = [Point::new(0, 0); 5];
+        for i in 0..5 {
+            let angle = (i as f32) * 2.0 * std::f32::consts::PI / 5.0 - std::f32::consts::PI / 2.0;
+            points[i] = Point::new(
+                self.center.x + (self.radius as f32 * angle.cos()) as i32,
+                self.center.y + (self.radius as f32 * angle.sin()) as i32,
+            );
+        }
+        points
+    }
 }
 
-impl Drawable for Point {
+impl Drawable for Pentagon {
     fn draw(&self, image: &mut Image) {
-        image.display(self.x, self.y, self.color());
+        let points = self.points();
+        let color = self.color();
+
+        for i in 0..5 {
+            let line = Line::new(&points[i], &points[(i + 1) % 5]);
+            line.draw_with_color(image, color.clone());
+        }
     }
 
     fn color(&self) -> Color {
-        let red: u8 = rand::random_range(0..=255);
-        let green: u8 = rand::random_range(0..=255);
-        let blue: u8 = rand::random_range(0..=255);
-        Color::rgb(red, green, blue)
+        Color::rgb(rand::random(), rand::random(), rand::random())
     }
-}
-
-pub trait Drawable {
-    fn draw(&self, image: &mut Image);
-    fn color(&self) -> Color;
-}
-
-pub trait Displayable {
-    fn display(&mut self, x: i32, y: i32, color: Color);
 }

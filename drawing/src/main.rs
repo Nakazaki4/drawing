@@ -27,6 +27,8 @@ fn main() {
     //     gs::Circle::random(image.width, image.height).draw(&mut image);
     // }
 
+    gs::Pentagon::random(image.width, image.height).draw(&mut image);
+
     raster::save(&image, "image.png").unwrap();
 }
 
