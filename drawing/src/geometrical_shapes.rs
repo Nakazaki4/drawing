@@ -157,3 +157,154 @@ impl Drawable for Pentagon {
         Color::rgb(rand::random(), rand::random(), rand::random())
     }
 }
+
+//triangel 
+pub struct  Triangle{
+    pnt1: Point,
+    pnt2: Point,
+    pnt3: Point,
+    
+}
+impl Triangle {
+    pub fn new(pnt1: &Point, pnt2: &Point, pnt3: &Point) -> Self {
+        Triangle {
+            pnt1: Point::new(pnt1.x, pnt1.y),
+            pnt2: Point::new(pnt2.x, pnt2.y),
+            pnt3: Point::new(pnt3.x, pnt3.y),
+        }
+    }
+    
+    //  pub fn random(width: i32, height: i32) -> Self {
+    //     Triangle {
+    //         pnt1: Point::random(width, height),
+    //         pnt2: Point::random(width, height),
+    //         pnt3: Point::random(width, height),
+    //     }
+    // }
+}
+
+impl Drawable for Triangle {
+    fn draw(&self, image: &mut Image) {
+        let g = self.color();
+        Line { start: self.pnt1.clone(), end: self.pnt2.clone() }.draw_with_color(image,g.clone());
+        Line { start: self.pnt2.clone(), end: self.pnt3.clone() }.draw_with_color(  image,g.clone());
+        Line { start: self.pnt3.clone(), end: self.pnt1.clone() }.draw_with_color(  image,g.clone());
+    }
+
+    fn color(&self) -> Color {
+        Color::rgb(
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+        )
+    }
+}
+
+
+
+pub struct Rectangle{
+    pnt1: Point,
+    pnt2: Point,
+        
+}
+
+impl Rectangle {
+    pub fn new(pnt1: &Point, pnt2: &Point) -> Self {
+        Rectangle {
+            pnt1: *pnt1,
+            pnt2: *pnt2,
+        }
+    }
+}
+
+impl Drawable for Rectangle {
+    fn draw(&self, image: &mut Image) {
+        let color = self.color();
+
+        let pnt3 = Point::new(self.pnt2.x, self.pnt1.y);
+        let pnt4 = Point::new(self.pnt1.x, self.pnt2.y);
+
+        Line::new(&self.pnt1, &pnt3).draw_with_color(image, color.clone());
+        Line::new(&pnt3, &self.pnt2).draw_with_color(image, color.clone());
+        Line::new(&self.pnt2, &pnt4).draw_with_color(image, color.clone());
+        Line::new(&pnt4, &self.pnt1).draw_with_color(image, color.clone());
+    }
+
+    fn color(&self) -> Color {
+        Color::rgb(
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+        )
+    }
+}
+
+pub struct Cube {
+    front_top_left: Point,
+    back_offset: Point, 
+    width: i32,
+    height: i32,
+}
+
+
+impl Cube {
+    pub fn new(front_top_left: &Point, width: i32, height: i32, depth: i32) -> Self {
+        Cube {
+            front_top_left: *front_top_left,
+            back_offset: Point::new(depth, -depth),
+            width,
+            height,
+        }
+    }
+}
+
+
+
+
+
+impl Drawable for Cube {
+    fn draw(&self, image: &mut Image) {
+        let color = self.color();
+
+        // Front rectangle
+        let f1 = self.front_top_left;
+        let f2 = Point::new(f1.x + self.width, f1.y + self.height);
+
+        let front = Rectangle::new(&f1, &f2);
+        front.draw(image);
+
+        // Back rectangle (shifted)
+        let b1 = Point::new(
+            f1.x + self.back_offset.x,
+            f1.y + self.back_offset.y,
+        );
+        let b2 = Point::new(
+            f2.x + self.back_offset.x,
+            f2.y + self.back_offset.y,
+        );
+
+        let back = Rectangle::new(&b1, &b2);
+        back.draw(image);
+
+        // Compute corners
+        let f3 = Point::new(f2.x, f1.y);
+        let f4 = Point::new(f1.x, f2.y);
+
+        let b3 = Point::new(b2.x, b1.y);
+        let b4 = Point::new(b1.x, b2.y);
+
+        // Connect edges
+        Line::new(&f1, &b1).draw_with_color(image, color.clone());
+        Line::new(&f3, &b3).draw_with_color(image, color.clone());
+        Line::new(&f2, &b2).draw_with_color(image, color.clone());
+        Line::new(&f4, &b4).draw_with_color(image, color.clone());
+    }
+
+    fn color(&self) -> Color {
+        Color::rgb(
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+        )
+    }
+}
