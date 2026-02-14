@@ -240,7 +240,7 @@ impl Drawable for Rectangle {
 }
 
 pub struct Cube {
-    origin: Point,   // front-top-left
+    origin: Point,   
     width: i32,
     height: i32,
     depth: i32,
