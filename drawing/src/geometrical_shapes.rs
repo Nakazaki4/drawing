@@ -1,5 +1,7 @@
 use raster::{Color, Image};
 
+// ==============================================================================
+
 pub trait Drawable {
     fn draw(&self, image: &mut Image);
     fn color(&self) -> Color;
@@ -8,6 +10,8 @@ pub trait Drawable {
 pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
 }
+
+// ==============================================================================
 
 #[derive(Clone, Copy)]
 pub struct Point {
@@ -37,6 +41,7 @@ impl Drawable for Point {
         Color::rgb(rand::random(), rand::random(), rand::random())
     }
 }
+// ==============================================================================
 
 pub struct Line {
     pub start: Point,
@@ -115,6 +120,7 @@ impl Drawable for Line {
         Color::rgb(rand::random(), rand::random(), rand::random())
     }
 }
+// ==============================================================================
 
 pub struct Pentagon {
     center: Point,
@@ -122,6 +128,7 @@ pub struct Pentagon {
 }
 
 impl Pentagon {
+    
     pub fn random(width: i32, height: i32) -> Self {
         Pentagon {
             center: Point::random(width, height),
@@ -158,12 +165,11 @@ impl Drawable for Pentagon {
     }
 }
 
-//triangel 
-pub struct  Triangle{
+// ==============================================================================
+pub struct Triangle {
     pnt1: Point,
     pnt2: Point,
     pnt3: Point,
-    
 }
 impl Triangle {
     pub fn new(pnt1: &Point, pnt2: &Point, pnt3: &Point) -> Self {
@@ -173,7 +179,7 @@ impl Triangle {
             pnt3: Point::new(pnt3.x, pnt3.y),
         }
     }
-    
+
     //  pub fn random(width: i32, height: i32) -> Self {
     //     Triangle {
     //         pnt1: Point::random(width, height),
@@ -186,9 +192,21 @@ impl Triangle {
 impl Drawable for Triangle {
     fn draw(&self, image: &mut Image) {
         let g = self.color();
-        Line { start: self.pnt1.clone(), end: self.pnt2.clone() }.draw_with_color(image,g.clone());
-        Line { start: self.pnt2.clone(), end: self.pnt3.clone() }.draw_with_color(  image,g.clone());
-        Line { start: self.pnt3.clone(), end: self.pnt1.clone() }.draw_with_color(  image,g.clone());
+        Line {
+            start: self.pnt1.clone(),
+            end: self.pnt2.clone(),
+        }
+        .draw_with_color(image, g.clone());
+        Line {
+            start: self.pnt2.clone(),
+            end: self.pnt3.clone(),
+        }
+        .draw_with_color(image, g.clone());
+        Line {
+            start: self.pnt3.clone(),
+            end: self.pnt1.clone(),
+        }
+        .draw_with_color(image, g.clone());
     }
 
     fn color(&self) -> Color {
@@ -200,12 +218,11 @@ impl Drawable for Triangle {
     }
 }
 
+// ==============================================================================
 
-
-pub struct Rectangle{
+pub struct Rectangle {
     pnt1: Point,
     pnt2: Point,
-        
 }
 
 impl Rectangle {
@@ -239,13 +256,14 @@ impl Drawable for Rectangle {
     }
 }
 
+// ==============================================================================
+
 pub struct Cube {
-    origin: Point,   
+    origin: Point,
     width: i32,
     height: i32,
     depth: i32,
 }
-
 
 impl Cube {
     pub fn new(origin: &Point, width: i32, height: i32, depth: i32) -> Self {
@@ -257,9 +275,6 @@ impl Cube {
         }
     }
 }
-
-
-
 
 impl Drawable for Cube {
     fn draw(&self, image: &mut Image) {
@@ -302,5 +317,157 @@ impl Drawable for Cube {
             rand::random_range(0..=255),
             rand::random_range(0..=255),
         )
+    }
+}
+
+// ==============================================================================
+
+
+pub struct Circle {
+    center: Point,
+    radius: i32,
+}
+
+impl Circle {
+    pub fn new(center: &Point, radius: i32) -> Self {
+        Circle {
+            center: *center,
+            radius,
+        }
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Circle {
+            center: Point::random(width, height),
+            radius: rand::random::<i32>().abs() % 100,
+        }
+    }
+}
+
+impl Drawable for Circle {
+    fn draw(&self, image: &mut Image) {
+        let color = self.color();
+        let x0 = self.center.x;
+        let y0 = self.center.y;
+        let radius = self.radius;
+
+        let mut x = radius;
+        let mut y = 0;
+        let mut err = 0;
+
+        while x >= y {
+            image.display(x0 + x, y0 + y, color.clone());
+            image.display(x0 + y, y0 + x, color.clone());
+            image.display(x0 - y, y0 + x, color.clone());
+            image.display(x0 - x, y0 + y, color.clone());
+            image.display(x0 - x, y0 - y, color.clone());
+            image.display(x0 - y, y0 - x, color.clone());
+            image.display(x0 + y, y0 - x, color.clone());
+            image.display(x0 + x, y0 - y, color.clone());
+
+            if err <= 0 {
+                y += 1;
+                err += 2 * y + 1;
+            }
+            if err > 0 {
+                x -= 1;
+                err -= 2 * x + 1;
+            }
+        }
+    }
+
+    fn color(&self) -> Color {
+        Color::rgb(rand::random(), rand::random(), rand::random())
+    }
+}
+
+// ==============================================================================
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_point_new() {
+        let p = Point::new(10, 20);
+        assert_eq!(p.x, 10);
+        assert_eq!(p.y, 20);
+    }
+
+    #[test]
+    fn test_line_new() {
+        let p1 = Point::new(10, 20);
+        let p2 = Point::new(30, 40);
+        let l = Line::new(&p1, &p2);
+        assert_eq!(l.start.x, 10);
+        assert_eq!(l.start.y, 20);
+        assert_eq!(l.end.x, 30);
+        assert_eq!(l.end.y, 40);
+    }
+
+    #[test]
+    fn test_triangle_new() {
+        let p1 = Point::new(10, 20);
+        let p2 = Point::new(30, 40);
+        let p3 = Point::new(50, 60);
+        let t = Triangle::new(&p1, &p2, &p3);
+        assert_eq!(t.pnt1, p1);
+        assert_eq!(t.pnt2, p2);
+        assert_eq!(t.pnt3, p3);
+    }
+
+    #[test]
+    fn test_rectangle_new() {
+        let p1 = Point::new(10, 20);
+        let p2 = Point::new(30, 40);
+        let r = Rectangle::new(&p1, &p2);
+        assert_eq!(r.pnt1, p1);
+        assert_eq!(r.pnt2, p2);
+    }
+
+    #[test]
+    fn test_cube_new() {
+        let p = Point::new(10, 20);
+        let c = Cube::new(&p, 100, 200, 50);
+        assert_eq!(c.origin, p);
+        assert_eq!(c.width, 100);
+        assert_eq!(c.height, 200);
+        assert_eq!(c.depth, 50);
+    }
+
+    #[test]
+    fn test_circle_new() {
+        let p = Point::new(10, 20);
+        let c = Circle::new(&p, 100);
+        assert_eq!(c.center, p);
+        assert_eq!(c.radius, 100);
+    }
+
+    #[test]
+    fn test_pentagon_points() {
+        let p = Point::new(100, 100);
+        let pentagon = Pentagon::new(p, 50);
+        let points = pentagon.points();
+        assert_eq!(points.len(), 5);
+
+        let expected_points = [
+            Point::new(100, 50),
+            Point::new(147, 84),
+            Point::new(129, 140),
+            Point::new(70, 140),
+            Point::new(52, 84),
+        ];
+
+        for i in 0..5 {
+            assert!(
+                (points[i].x - expected_points[i].x).abs() <= 1,
+                "x diff for point {}",
+                i
+            );
+            assert!(
+                (points[i].y - expected_points[i].y).abs() <= 1,
+                "y diff for point {}",
+                i
+            );
+        }
     }
 }
