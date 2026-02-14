@@ -240,24 +240,23 @@ impl Drawable for Rectangle {
 }
 
 pub struct Cube {
-    front_top_left: Point,
-    back_offset: Point, 
+    origin: Point,   // front-top-left
     width: i32,
     height: i32,
+    depth: i32,
 }
 
 
 impl Cube {
-    pub fn new(front_top_left: &Point, width: i32, height: i32, depth: i32) -> Self {
+    pub fn new(origin: &Point, width: i32, height: i32, depth: i32) -> Self {
         Cube {
-            front_top_left: *front_top_left,
-            back_offset: Point::new(depth, -depth),
+            origin: *origin,
             width,
             height,
+            depth,
         }
     }
 }
-
 
 
 
@@ -266,37 +265,34 @@ impl Drawable for Cube {
     fn draw(&self, image: &mut Image) {
         let color = self.color();
 
-        // Front rectangle
-        let f1 = self.front_top_left;
-        let f2 = Point::new(f1.x + self.width, f1.y + self.height);
+        // Front face points
+        let f1 = self.origin;
+        let f2 = Point::new(f1.x + self.width, f1.y);
+        let f3 = Point::new(f1.x + self.width, f1.y + self.height);
+        let f4 = Point::new(f1.x, f1.y + self.height);
 
-        let front = Rectangle::new(&f1, &f2);
-        front.draw(image);
+        // Back face points (shifted)
+        let b1 = Point::new(f1.x + self.depth, f1.y - self.depth);
+        let b2 = Point::new(f2.x + self.depth, f2.y - self.depth);
+        let b3 = Point::new(f3.x + self.depth, f3.y - self.depth);
+        let b4 = Point::new(f4.x + self.depth, f4.y - self.depth);
 
-        // Back rectangle (shifted)
-        let b1 = Point::new(
-            f1.x + self.back_offset.x,
-            f1.y + self.back_offset.y,
-        );
-        let b2 = Point::new(
-            f2.x + self.back_offset.x,
-            f2.y + self.back_offset.y,
-        );
+        // Front face
+        Line::new(&f1, &f2).draw_with_color(image, color.clone());
+        Line::new(&f2, &f3).draw_with_color(image, color.clone());
+        Line::new(&f3, &f4).draw_with_color(image, color.clone());
+        Line::new(&f4, &f1).draw_with_color(image, color.clone());
 
-        let back = Rectangle::new(&b1, &b2);
-        back.draw(image);
+        // Back face
+        Line::new(&b1, &b2).draw_with_color(image, color.clone());
+        Line::new(&b2, &b3).draw_with_color(image, color.clone());
+        Line::new(&b3, &b4).draw_with_color(image, color.clone());
+        Line::new(&b4, &b1).draw_with_color(image, color.clone());
 
-        // Compute corners
-        let f3 = Point::new(f2.x, f1.y);
-        let f4 = Point::new(f1.x, f2.y);
-
-        let b3 = Point::new(b2.x, b1.y);
-        let b4 = Point::new(b1.x, b2.y);
-
-        // Connect edges
+        // Connections
         Line::new(&f1, &b1).draw_with_color(image, color.clone());
-        Line::new(&f3, &b3).draw_with_color(image, color.clone());
         Line::new(&f2, &b2).draw_with_color(image, color.clone());
+        Line::new(&f3, &b3).draw_with_color(image, color.clone());
         Line::new(&f4, &b4).draw_with_color(image, color.clone());
     }
 
