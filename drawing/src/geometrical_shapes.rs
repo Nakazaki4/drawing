@@ -13,7 +13,7 @@ pub trait Displayable {
 
 // ==============================================================================
 
-#[derive(Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Point {
     pub x: i32,
     pub y: i32,
@@ -43,6 +43,7 @@ impl Drawable for Point {
 }
 // ==============================================================================
 
+#[derive(Debug, PartialEq)]
 pub struct Line {
     pub start: Point,
     pub end: Point,
@@ -122,13 +123,17 @@ impl Drawable for Line {
 }
 // ==============================================================================
 
+#[derive(Debug, PartialEq)]
 pub struct Pentagon {
-    center: Point,
-    radius: i32,
+    pub center: Point,
+    pub radius: i32,
 }
 
 impl Pentagon {
-    
+    pub fn new(center: Point, radius: i32) -> Self {
+        Pentagon { center, radius }
+    }
+
     pub fn random(width: i32, height: i32) -> Self {
         Pentagon {
             center: Point::random(width, height),
@@ -166,11 +171,13 @@ impl Drawable for Pentagon {
 }
 
 // ==============================================================================
+#[derive(Debug, PartialEq)]
 pub struct Triangle {
-    pnt1: Point,
-    pnt2: Point,
-    pnt3: Point,
+    pub pnt1: Point,
+    pub pnt2: Point,
+    pub pnt3: Point,
 }
+
 impl Triangle {
     pub fn new(pnt1: &Point, pnt2: &Point, pnt3: &Point) -> Self {
         Triangle {
@@ -180,13 +187,13 @@ impl Triangle {
         }
     }
 
-    //  pub fn random(width: i32, height: i32) -> Self {
-    //     Triangle {
-    //         pnt1: Point::random(width, height),
-    //         pnt2: Point::random(width, height),
-    //         pnt3: Point::random(width, height),
-    //     }
-    // }
+    pub fn random(width: i32, height: i32) -> Self {
+        Triangle {
+            pnt1: Point::random(width, height),
+            pnt2: Point::random(width, height),
+            pnt3: Point::random(width, height),
+        }
+    }
 }
 
 impl Drawable for Triangle {
@@ -210,19 +217,16 @@ impl Drawable for Triangle {
     }
 
     fn color(&self) -> Color {
-        Color::rgb(
-            rand::random_range(0..=255),
-            rand::random_range(0..=255),
-            rand::random_range(0..=255),
-        )
+        Color::rgb(rand::random(), rand::random(), rand::random())
     }
 }
 
 // ==============================================================================
 
+#[derive(Debug, PartialEq)]
 pub struct Rectangle {
-    pnt1: Point,
-    pnt2: Point,
+    pub pnt1: Point,
+    pub pnt2: Point,
 }
 
 impl Rectangle {
@@ -230,6 +234,13 @@ impl Rectangle {
         Rectangle {
             pnt1: *pnt1,
             pnt2: *pnt2,
+        }
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Rectangle {
+            pnt1: Point::random(width, height),
+            pnt2: Point::random(width, height),
         }
     }
 }
@@ -258,11 +269,12 @@ impl Drawable for Rectangle {
 
 // ==============================================================================
 
+#[derive(Debug, PartialEq)]
 pub struct Cube {
-    origin: Point,
-    width: i32,
-    height: i32,
-    depth: i32,
+    pub origin: Point,
+    pub width: i32,
+    pub height: i32,
+    pub depth: i32,
 }
 
 impl Cube {
@@ -272,6 +284,15 @@ impl Cube {
             width,
             height,
             depth,
+        }
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Cube {
+            origin: Point::random(width, height),
+            width: rand::random::<i32>().abs() % 100 + 20,
+            height: rand::random::<i32>().abs() % 100 + 20,
+            depth: rand::random::<i32>().abs() % 100 + 20,
         }
     }
 }
@@ -322,10 +343,10 @@ impl Drawable for Cube {
 
 // ==============================================================================
 
-
+#[derive(Debug, PartialEq)]
 pub struct Circle {
-    center: Point,
-    radius: i32,
+    pub center: Point,
+    pub radius: i32,
 }
 
 impl Circle {
@@ -389,8 +410,14 @@ mod tests {
     #[test]
     fn test_point_new() {
         let p = Point::new(10, 20);
-        assert_eq!(p.x, 10);
-        assert_eq!(p.y, 20);
+        assert_eq!(p, Point { x: 10, y: 20 });
+    }
+
+    #[test]
+    fn test_point_random() {
+        let p = Point::random(100, 200);
+        assert!(p.x < 100);
+        assert!(p.y < 200);
     }
 
     #[test]
@@ -398,10 +425,16 @@ mod tests {
         let p1 = Point::new(10, 20);
         let p2 = Point::new(30, 40);
         let l = Line::new(&p1, &p2);
-        assert_eq!(l.start.x, 10);
-        assert_eq!(l.start.y, 20);
-        assert_eq!(l.end.x, 30);
-        assert_eq!(l.end.y, 40);
+        assert_eq!(l, Line { start: p1, end: p2 });
+    }
+
+    #[test]
+    fn test_line_random() {
+        let l = Line::random(100, 200);
+        assert!(l.start.x < 100);
+        assert!(l.start.y < 200);
+        assert!(l.end.x < 100);
+        assert!(l.end.y < 200);
     }
 
     #[test]
@@ -410,9 +443,18 @@ mod tests {
         let p2 = Point::new(30, 40);
         let p3 = Point::new(50, 60);
         let t = Triangle::new(&p1, &p2, &p3);
-        assert_eq!(t.pnt1, p1);
-        assert_eq!(t.pnt2, p2);
-        assert_eq!(t.pnt3, p3);
+        assert_eq!(t, Triangle { pnt1: p1, pnt2: p2, pnt3: p3 });
+    }
+
+    #[test]
+    fn test_triangle_random() {
+        let t = Triangle::random(100, 200);
+        assert!(t.pnt1.x < 100);
+        assert!(t.pnt1.y < 200);
+        assert!(t.pnt2.x < 100);
+        assert!(t.pnt2.y < 200);
+        assert!(t.pnt3.x < 100);
+        assert!(t.pnt3.y < 200);
     }
 
     #[test]
@@ -420,26 +462,63 @@ mod tests {
         let p1 = Point::new(10, 20);
         let p2 = Point::new(30, 40);
         let r = Rectangle::new(&p1, &p2);
-        assert_eq!(r.pnt1, p1);
-        assert_eq!(r.pnt2, p2);
+        assert_eq!(r, Rectangle { pnt1: p1, pnt2: p2 });
+    }
+
+    #[test]
+    fn test_rectangle_random() {
+        let r = Rectangle::random(100, 200);
+        assert!(r.pnt1.x < 100);
+        assert!(r.pnt1.y < 200);
+        assert!(r.pnt2.x < 100);
+        assert!(r.pnt2.y < 200);
     }
 
     #[test]
     fn test_cube_new() {
         let p = Point::new(10, 20);
         let c = Cube::new(&p, 100, 200, 50);
-        assert_eq!(c.origin, p);
-        assert_eq!(c.width, 100);
-        assert_eq!(c.height, 200);
-        assert_eq!(c.depth, 50);
+        assert_eq!(c, Cube { origin: p, width: 100, height: 200, depth: 50 });
+    }
+
+    #[test]
+    fn test_cube_random() {
+        let c = Cube::random(100, 200);
+        assert!(c.origin.x < 100);
+        assert!(c.origin.y < 200);
+        assert!(c.width >= 20 && c.width < 120);
+        assert!(c.height >= 20 && c.height < 120);
+        assert!(c.depth >= 20 && c.depth < 120);
     }
 
     #[test]
     fn test_circle_new() {
         let p = Point::new(10, 20);
         let c = Circle::new(&p, 100);
-        assert_eq!(c.center, p);
-        assert_eq!(c.radius, 100);
+        assert_eq!(c, Circle { center: p, radius: 100 });
+    }
+
+    #[test]
+    fn test_circle_random() {
+        let c = Circle::random(100, 200);
+        assert!(c.center.x < 100);
+        assert!(c.center.y < 200);
+        assert!(c.radius < 100);
+    }
+
+    #[test]
+    fn test_pentagon_new() {
+        let p = Point::new(10, 20);
+        let pentagon = Pentagon::new(p, 100);
+        assert_eq!(pentagon, Pentagon { center: p, radius: 100 });
+    }
+
+    #[test]
+    fn test_pentagon_random() {
+        let p = Pentagon::random(100, 200);
+        assert!(p.center.x < 100);
+        assert!(p.center.y < 200);
+        assert!(p.radius >= 20 && p.radius < 120);
     }
 
     #[test]
