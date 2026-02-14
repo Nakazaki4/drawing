@@ -2,6 +2,7 @@ use raster::{Color, Image};
 pub struct Line {
     start: Point,
     end: Point,
+    
 }
 
 impl Line {
@@ -72,6 +73,7 @@ impl Drawable for Line {
         )
     }
 }
+#[derive(Clone)]
 
 pub struct Point {
     x: i32,
@@ -110,4 +112,45 @@ pub trait Drawable {
 
 pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
+}
+
+//triangel 
+pub struct  Triangle{
+    pnt1: Point,
+    pnt2: Point,
+    pnt3: Point,
+    
+}
+impl Triangle {
+    pub fn new(pnt1: &Point, pnt2: &Point, pnt3: &Point) -> Self {
+        Triangle {
+            pnt1: Point::new(pnt1.x, pnt1.y),
+            pnt2: Point::new(pnt2.x, pnt2.y),
+            pnt3: Point::new(pnt3.x, pnt3.y),
+        }
+    }
+    
+    //  pub fn random(width: i32, height: i32) -> Self {
+    //     Triangle {
+    //         pnt1: Point::random(width, height),
+    //         pnt2: Point::random(width, height),
+    //         pnt3: Point::random(width, height),
+    //     }
+    // }
+}
+
+impl Drawable for Triangle {
+    fn draw(&self, image: &mut Image) {
+        Line { start: self.pnt1.clone(), end: self.pnt2.clone() }.draw(image);
+        Line { start: self.pnt2.clone(), end: self.pnt3.clone() }.draw(image);
+        Line { start: self.pnt3.clone(), end: self.pnt1.clone() }.draw(image);
+    }
+
+    fn color(&self) -> Color {
+        Color::rgb(
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+            rand::random_range(0..=255),
+        )
+    }
 }
